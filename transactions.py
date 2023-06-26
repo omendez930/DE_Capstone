@@ -155,7 +155,7 @@ def main():
                 print(state[2], end=' ')
                 print(state[3], end=' ')
         
-        customer_details = get_customer_details()        
+        #customer_details = get_customer_details()        
     
 
 if __name__ == '__main__':
