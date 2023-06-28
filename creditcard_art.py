@@ -5,12 +5,12 @@ def generate_ascii_card(number, name, expiration_date):
         " |                                     | ",
         " |                                     | ",
         " |                                     | ",
-        f"  | {number}                          | ",
+        f" | {number}                          | ",
         " |                                     | ",
         " |                                     | ",
-        f"  | {name}                            | ",
+        f" | {name}                            | ",
         " |                                     | ",
-        f"  |{expiration_date}                  | ",
+        f" |{expiration_date}                  | ",
         " |_____________________________________| "
     ]
 

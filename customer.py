@@ -1,14 +1,23 @@
+from dotenv import load_dotenv
 import mysql.connector as dbconnect
 import sys
+import os
+load_dotenv()
+
+host = os.getenv('DB_HOST')
+port = os.getenv('DB_PORT')
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+database = os.getenv('DB_DATABASE')
 
 def customer_breakdown(first,middle,last):
     try:
         myconn = dbconnect.connect(
-            host='localhost',
-            port='3306',
-            user='root',
-            password='password',
-            database='creditcard_capstone'
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database
         )
         cursor = myconn.cursor()
         query = "select c.first_name, c.middle_name,c.last_name, c.CREDIT_CARD_NO,cc.TRANSACTION_TYPE,round(cc.TRANSACTION_VALUE,2) \

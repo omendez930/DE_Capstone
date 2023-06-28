@@ -1,20 +1,24 @@
-# import findspark
-# findspark.init()
 
-from creditcard_art import *
+import mysql.connector as dbconnect
+from dotenv import load_dotenv
 import mysql.connector as dbconnect
 import sys
-import creditcard_art
-from pprint import pp
+import os
+load_dotenv()
 
+host = os.getenv('DB_HOST')
+port = os.getenv('DB_PORT')
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+database = os.getenv('DB_DATABASE')
 
 def get_transactions(zip_code, month, year, transacton_type, state):
     try:
-        myConnection = dbconnect.connect(host = 'localhost',
-        port='3306',
-        user= 'root',
-        password = 'password',
-        database='creditcard_capstone')
+        myConnection = dbconnect.connect(host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database)
     
         if myConnection.is_connected():
             print('Successfully connected to the Database')
@@ -41,11 +45,11 @@ def get_transactions(zip_code, month, year, transacton_type, state):
 
 def total_transaction_by_type(transaction_type):
     try:
-        conn = dbconnect.connect(host = 'localhost',
-            port='3306',
-            user= 'root',
-            password = 'password',
-            database='creditcard_capstone')
+        conn = dbconnect.connect(host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database)
         
         cursor = conn.cursor()
         query = 'select count(transaction_id), round(sum(transaction_value),2) as Total from cdw_sapp_credit_card where transaction_type = %s group by transaction_type'
@@ -63,11 +67,11 @@ def total_transaction_by_type(transaction_type):
 def transactions_by_state(state):
     try:
         myconn = dbconnect.connect(
-            host='localhost',
-            port='3306',
-            user='root',
-            password='password',
-            database='creditcard_capstone'
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database
         )
         
         cursor = myconn.cursor()
@@ -135,11 +139,11 @@ def transactions_by_state(state):
 
 def transaction_by_dates(ssn,start_date,end_date):
     myconn = dbconnect.connect(
-        host='localhost',
-        port='3306',
-        user='root',
-        password='password',
-        database='creditcard_capstone'
+        host=host,
+        port=port,
+        user=user,
+        password=password,
+        database=database
     )
     
     cursor = myconn.cursor()
