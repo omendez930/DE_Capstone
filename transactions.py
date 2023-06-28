@@ -1,11 +1,11 @@
 # import findspark
 # findspark.init()
 
-from art import *
+from creditcard_art import *
 import mysql.connector as dbconnect
 import sys
-# import pyspark
-# from pyspark.sql import SparkSession
+import creditcard_art
+from pprint import pp
 
 
 def get_transactions(zip_code, month, year, transacton_type, state):
@@ -90,73 +90,62 @@ def transactions_by_state(state):
             myconn.close()
             print('Database connection has closed') 
     
-    #def customer_details
-    #
-def main():
-    # cc = text2art('1234 5678 9100 0000', 'block')
-    # expiration_date = text2art('Exp: 00/00', 'small')
-    # cardholder = text2art('Cardhoder: John DOE', 'small_slant')
-    
-    # print(cc)
-    # print(expiration_date)
-    # print(cardholder)
-    
-    print('Welcome to the Credit Card transactions overview, please fill out the requested prompts.')
-    while True:
-        zip_code = input('Enter a Zip Code, or enter q to quit: ')
-        if zip_code != 'q' and zip_code != '':
-            month = input('Enter the month: ')
-            if month != 'q' and month != '':
-                year = input('Enter the year: ')
-                if year != 'q' and year != '':
-                    transaction_type = input('Enter the type of transaction: ')
-                    if transaction_type != 'q' or transaction_type !='':
-                        state = input('Enter the State of the branch: ')   
-        else:
-            print('Transaction not found')
-            sys.exit()
+# def customer_breakdown(first,middle,last):
+#     try:
+#         myconn = dbconnect.connect(
+#             host='localhost',
+#             port='3306',
+#             user='root',
+#             password='password',
+#             database='creditcard_capstone'
+#         )
+#         cursor = myconn.cursor()
+#         query = "select c.first_name, c.middle_name,c.last_name, c.CREDIT_CARD_NO,cc.TRANSACTION_TYPE,round(cc.TRANSACTION_VALUE,2) \
+#                 from cdw_sapp_customer c \
+#                 join cdw_sapp_credit_card cc on c.ssn = cc.CUST_SSN \
+#                 where c.first_name = %s and c.middle_name = %s and c.last_name= %s"
+#         cursor.execute(query,(first,middle,last))
+#         cust_breakdown = cursor.fetchall()
+#         #print(cust_breakdown)
+#         return cust_breakdown
+#     except:
+#         print('Connection timed out')
+#     finally:
+#         if myconn.is_connected():
+#             cursor.close()
+#             myconn.close()
+            
+# def monthly_cc_bill(fn,ln,month,year):
+#     myconn = dbconnect.connect(
+#         host='localhost',
+#         port='3306',
+#         user='root',
+#         password='password',
+#         database='creditcard_capstone'
+#     )
+#     cursor = myconn.cursor()
+#     query = 'select c.credit_card_no, sum(cc.transaction_value) as total \
+#             from cdw_sapp_customer c \
+#             join cdw_sapp_credit_card cc on c.ssn = cc.cust_ssn\
+#             where c.first_name = %s and c.last_name = %s and cc.month = %s and cc.year = %s \
+#             group by c.CREDIT_CARD_NO'
+#     cursor.execute(query,(fn,ln,month,year,))
+#     cc_monthly_bill = cursor.fetchone()
+#     return cc_monthly_bill
 
-        transactions = get_transactions(zip_code,month,year,transaction_type,state)
-        print(transactions)
-        if transactions:
-            print('***************************************************************************TRANSACTIONS*****************************************************************************')
-            for transaction in transactions:
-                print(f'Transaction ID: {transaction[0]}')
-                print(f'State: {transaction[1]}')
-                print(f'Zip Code: {transaction[2]}')
-                print(f'Month: {transaction[3]}')
-                print(f'Year: {transaction[4]}')
-                print(f'Day: {transaction[5]}')
-                print(f'Transaction Type: {transaction[6]}')
-                print('----------------------------------------------------------------------------------------')
-        
-        total_value_by_type = total_transaction_by_type(transaction_type)
-        if  total_value_by_type:
-            print(f'Total Value for {transaction_type}')
-            print(f'Count: {total_value_by_type[0]}')
-            print(f'Total: {total_value_by_type[1]}')
-
-        else:
-            print('Value not located')
-        
-        total_by_state = transactions_by_state(state)
-        if total_by_state:
-            print('********************************************************************************************')
-            print()
-            print(f'Total transactions for {state}')
-            print()
-            branch = ('Branch Code','Branch Name', 'Transaction Count', 'Total Amount')
-            for branches in branch:
-                print(branches[:],sep=' | ', end=' ')
-                print()
-            for state in total_by_state:
-                print(state[0], end=' ')
-                print(state[1], end=' ')
-                print(state[2], end=' ')
-                print(state[3], end=' ')
-        
-        #customer_details = get_customer_details()        
+def transaction_by_dates(ssn,start_date,end_date):
+    myconn = dbconnect.connect(
+        host='localhost',
+        port='3306',
+        user='root',
+        password='password',
+        database='creditcard_capstone'
+    )
     
-
-if __name__ == '__main__':
-    main()
+    cursor = myconn.cursor()
+    query = 'select concat(year,"-",month,"-",day) as Transaction_date, TRANSACTION_VALUE,TRANSACTION_TYPE\
+             from cdw_sapp_credit_card\
+             where cust_ssn = %s and concat(year,"-",month,"-",day) >= (%s) and concat(year,"-",month,"-",day) <= (%s) order by year desc, month desc, day desc;'
+    cursor.execute(query,(ssn,start_date,end_date))
+    transaction_dates = cursor.fetchall()
+    return transaction_dates
