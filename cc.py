@@ -1,14 +1,23 @@
+from dotenv import load_dotenv
 import mysql.connector as dbconnect
 import sys
+import os
+load_dotenv()
+
+host = os.getenv('DB_HOST')
+port = os.getenv('DB_PORT')
+user = os.getenv('DB_USER')
+password = os.getenv('DB_PASSWORD')
+database = os.getenv('DB_DATABASE')
 
 def monthly_cc_bill(fn,ln,month,year):
     try:
         myconn = dbconnect.connect(
-            host='localhost',
-            port='3306',
-            user='root',
-            password='password',
-            database='creditcard_capstone'
+            host=host,
+            port=port,
+            user=user,
+            password=password,
+            database=database
         )
         cursor = myconn.cursor()
         query = 'select c.credit_card_no, sum(cc.transaction_value) as total \
@@ -25,3 +34,5 @@ def monthly_cc_bill(fn,ln,month,year):
         if myconn.is_connected():
             cursor.close()
             myconn.close()
+            
+
