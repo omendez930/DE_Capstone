@@ -12,7 +12,8 @@ user = os.getenv('DB_USER')
 password = os.getenv('DB_PASSWORD')
 database = os.getenv('DB_DATABASE')
 
-def get_transactions(zip_code, month, year, transacton_type, state):
+def get_transactions(zip_code, month, year):
+    #connect to Mysql database using evironmental variables
     try:
         myConnection = dbconnect.connect(host=host,
             port=port,
@@ -20,18 +21,20 @@ def get_transactions(zip_code, month, year, transacton_type, state):
             password=password,
             database=database)
     
-        if myConnection.is_connected():
-            print('Successfully connected to the Database')
-            cursor = myConnection.cursor()
-            
-            query = """select transaction_id,cust_state, cust_zip, month, year, day, TRANSACTION_TYPE \
-                    from cdw_sapp_customer\
-                    join cdw_sapp_credit_card on cdw_sapp_customer.ssn = cdw_sapp_credit_card.cust_ssn where cdw_sapp_customer.cust_zip = %s AND cdw_sapp_credit_card.month= %s AND cdw_sapp_credit_card.year = %s Order By day Desc"""
-            cursor.execute(query,(zip_code,month,year))
-            
-            transaction_table = cursor.fetchall()
-            
-        return transaction_table
+        #create db cursor to iterate over the rows in a db
+        cursor = myConnection.cursor()
+        #query provides results for zipcodes in the database. Type, zipcode, month, year, and day are provided
+        query = """select transaction_id,cust_state, cust_zip, month, year, day, TRANSACTION_TYPE \
+                from cdw_sapp_customer\
+                join cdw_sapp_credit_card on cdw_sapp_customer.ssn = cdw_sapp_credit_card.cust_ssn where cdw_sapp_customer.cust_zip = %s AND cdw_sapp_credit_card.month= %s AND cdw_sapp_credit_card.year = %s Order By day Desc"""
+        cursor.execute(query,(zip_code,month,year))
+        #retrieve all roe from database cursor
+        transaction_table = cursor.fetchall()
+        if transaction_table:
+            return transaction_table
+        else:
+            print('The information given does not exist in our database')
+    #if eror connectionaborted error occurs print the message
     except ConnectionAbortedError as e:
         print('Error while connecting to Database', e)
     finally:
@@ -50,13 +53,18 @@ def total_transaction_by_type(transaction_type):
             user=user,
             password=password,
             database=database)
-        
+        #create db cursor to iterate over the rows in a db
         cursor = conn.cursor()
+        #query that returns the total value amount by the transaction type
         query = 'select count(transaction_id), round(sum(transaction_value),2) as Total from cdw_sapp_credit_card where transaction_type = %s group by transaction_type'
         cursor.execute(query,(transaction_type,))
         total = cursor.fetchone()
         #print(total)
-        return total
+        #if True return the row provided by the query
+        if total:
+            return total
+        else:
+            print('The transaction type does not exist. Please try again')
     except:
         print('Programming error, could not process parameters')
     finally:
@@ -73,8 +81,9 @@ def transactions_by_state(state):
             password=password,
             database=database
         )
-        
+        #create db cursor to iterate over the rows in a db
         cursor = myconn.cursor()
+        #query that returns the total number of transactions type, and the total amount for the transaction type joined by branch code and filtered by state
         query = 'select b.branch_code, b.branch_name, count(*) as transaction_count, round(sum(c.transaction_value), 2) as total_amount \
                 from cdw_sapp_branch b \
                 join cdw_sapp_credit_card c on b.BRANCH_CODE = c.BRANCH_CODE \
@@ -84,58 +93,19 @@ def transactions_by_state(state):
         
         cursor.execute(query,(state,))
         total_by_state = cursor.fetchall()
+        if total_by_state:
         #print(total_by_state)
-        return total_by_state
+            return total_by_state
+        else:
+            print('State not located, please try again.')
     except:
         print('Connection timed out')
     finally:
         if myconn.is_connected:
             cursor.close()
             myconn.close()
-            print('Database connection has closed') 
-    
-# def customer_breakdown(first,middle,last):
-#     try:
-#         myconn = dbconnect.connect(
-#             host='localhost',
-#             port='3306',
-#             user='root',
-#             password='password',
-#             database='creditcard_capstone'
-#         )
-#         cursor = myconn.cursor()
-#         query = "select c.first_name, c.middle_name,c.last_name, c.CREDIT_CARD_NO,cc.TRANSACTION_TYPE,round(cc.TRANSACTION_VALUE,2) \
-#                 from cdw_sapp_customer c \
-#                 join cdw_sapp_credit_card cc on c.ssn = cc.CUST_SSN \
-#                 where c.first_name = %s and c.middle_name = %s and c.last_name= %s"
-#         cursor.execute(query,(first,middle,last))
-#         cust_breakdown = cursor.fetchall()
-#         #print(cust_breakdown)
-#         return cust_breakdown
-#     except:
-#         print('Connection timed out')
-#     finally:
-#         if myconn.is_connected():
-#             cursor.close()
-#             myconn.close()
-            
-# def monthly_cc_bill(fn,ln,month,year):
-#     myconn = dbconnect.connect(
-#         host='localhost',
-#         port='3306',
-#         user='root',
-#         password='password',
-#         database='creditcard_capstone'
-#     )
-#     cursor = myconn.cursor()
-#     query = 'select c.credit_card_no, sum(cc.transaction_value) as total \
-#             from cdw_sapp_customer c \
-#             join cdw_sapp_credit_card cc on c.ssn = cc.cust_ssn\
-#             where c.first_name = %s and c.last_name = %s and cc.month = %s and cc.year = %s \
-#             group by c.CREDIT_CARD_NO'
-#     cursor.execute(query,(fn,ln,month,year,))
-#     cc_monthly_bill = cursor.fetchone()
-#     return cc_monthly_bill
+            print('Database connection has closed')
+        
 
 def transaction_by_dates(ssn,start_date,end_date):
     myconn = dbconnect.connect(
@@ -152,4 +122,7 @@ def transaction_by_dates(ssn,start_date,end_date):
              where cust_ssn = %s and concat(year,"-",month,"-",day) >= (%s) and concat(year,"-",month,"-",day) <= (%s) order by year desc, month desc, day desc;'
     cursor.execute(query,(ssn,start_date,end_date))
     transaction_dates = cursor.fetchall()
-    return transaction_dates
+    if transaction_dates:
+        return transaction_dates
+    else:
+        print('Dates are not available.')

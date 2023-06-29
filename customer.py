@@ -27,7 +27,10 @@ def customer_breakdown(first,middle,last):
         cursor.execute(query,(first,middle,last))
         cust_breakdown = cursor.fetchall()
         #print(cust_breakdown)
-        return cust_breakdown
+        if cust_breakdown:
+            return cust_breakdown
+        else:
+            print('Account not found.')
     except:
         print('Connection timed out')
     finally:
