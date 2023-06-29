@@ -26,8 +26,8 @@ def main():
                     year = input('Enter the year: ')
                     
             transactions = gt(zip_code,month,year)
-            #print(type(transactions))
-            if transactions == type(transactions):
+            
+            if transactions:
                 print(f'****************TRANSACTIONS occured in {zip_code}****************************')
                 for transaction in transactions:
                     print(f'Transaction ID: {transaction[0]}')
@@ -38,8 +38,7 @@ def main():
                     print(f'Day: {transaction[5]}')
                     print(f'Transaction Type: {transaction[6]}')
                     print('----------------------------------------------------------------------------------------')
-                else:
-                    print('Please try again')
+                
         elif initial_start == 2:
             transaction_type = input('Enter the type of transaction (Bills, Education, Grocery, Entertainment,Gas,Test, and Healthcare): ').lower()
             if transaction_type != 'q' or transaction_type != '':
@@ -106,7 +105,7 @@ def main():
                 elif decision == 3:
                     ssn = input('Enter SSN: ')
                     start_date = input('Enter start date in the format yyyy-m-d: ')
-                    end_date = input('Enter end date i the format yyyy-m-d: ')
+                    end_date = input('Enter end date in the format yyyy-m-d: ')
                     transaction_dates = t_dates(ssn,start_date,end_date)
                     if transaction_dates != None:
                         print('***********************************************')
