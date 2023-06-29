@@ -33,7 +33,7 @@ def get_transactions(zip_code, month, year):
         if transaction_table:
             return transaction_table
         else:
-            print('The information given does not exist in our database')
+            print('The information given does not exist in our database. Please try again')
     #if eror connectionaborted error occurs print the message
     except ConnectionAbortedError as e:
         print('Error while connecting to Database', e)
@@ -57,6 +57,7 @@ def total_transaction_by_type(transaction_type):
         cursor = conn.cursor()
         #query that returns the total value amount by the transaction type
         query = 'select count(transaction_id), round(sum(transaction_value),2) as Total from cdw_sapp_credit_card where transaction_type = %s group by transaction_type'
+        #execute query
         cursor.execute(query,(transaction_type,))
         total = cursor.fetchone()
         #print(total)
@@ -90,7 +91,7 @@ def transactions_by_state(state):
                 where b.BRANCH_STATE = %s \
                 group by b.branch_code, b.branch_name \
                 order by b.branch_code'
-        
+        #execute query
         cursor.execute(query,(state,))
         total_by_state = cursor.fetchall()
         if total_by_state:
@@ -117,6 +118,7 @@ def transaction_by_dates(ssn,start_date,end_date):
     )
     
     cursor = myconn.cursor()
+    #query searches for transactions based off of ssn for a specified date, concatenating the year, month, and day
     query = 'select concat(year,"-",month,"-",day) as Transaction_date, TRANSACTION_VALUE,TRANSACTION_TYPE\
              from cdw_sapp_credit_card\
              where cust_ssn = %s and concat(year,"-",month,"-",day) >= (%s) and concat(year,"-",month,"-",day) <= (%s) order by year desc, month desc, day desc;'
