@@ -27,7 +27,10 @@ def monthly_cc_bill(fn,ln,month,year):
                 group by c.CREDIT_CARD_NO'
         cursor.execute(query,(fn,ln,month,year,))
         cc_monthly_bill = cursor.fetchone()
-        return cc_monthly_bill
+        if cc_monthly_bill:
+            return cc_monthly_bill
+        else:
+            print('Bill not found')
     except:
         print('Connection has closed')
     finally:
